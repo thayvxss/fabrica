@@ -1,0 +1,410 @@
+openapi: 3.0.3
+
+info:
+  title: AtendeLab API
+  version: 1.0.0
+  description: Documentação das principais operações do sistema AtendeLab, desenvolvido em PHP e MySQL para controle de atendimentos acadêmicos.
+
+servers:
+  - url: http://localhost/atendelab
+    description: Ambiente local XAMPP
+
+tags:
+  - name: Autenticação
+    description: Operações de acesso ao sistema
+  - name: Pessoas
+    description: Cadastro e manutenção de pessoas atendidas
+  - name: Tipos de Atendimento
+    description: Cadastro e manutenção das categorias de atendimento
+  - name: Atendimentos
+    description: Registro, consulta e atualização dos atendimentos
+  - name: Relatórios
+    description: Consulta de relatórios do sistema
+
+paths:
+  /login.php:
+    post:
+      tags:
+        - Autenticação
+      summary: Realiza login no sistema
+      description: Valida e-mail e senha do usuário cadastrado e inicia a sessão.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - email
+                - senha
+              properties:
+                email:
+                  type: string
+                  example: admin@atendelab.com
+                senha:
+                  type: string
+                  example: "123456"
+      responses:
+        "302":
+          description: Redireciona para o dashboard em caso de sucesso.
+
+  /logout.php:
+    get:
+      tags:
+        - Autenticação
+      summary: Encerra a sessão do usuário
+      description: Finaliza a sessão PHP e redireciona para a tela de login.
+      responses:
+        "302":
+          description: Sessão encerrada e usuário redirecionado.
+
+  /dashboard.php:
+    get:
+      tags:
+        - Atendimentos
+      summary: Exibe o dashboard
+      description: Mostra indicadores gerais, últimos atendimentos e atalhos do sistema.
+      responses:
+        "200":
+          description: Dashboard exibido com sucesso.
+
+  /pessoas/index.php:
+    get:
+      tags:
+        - Pessoas
+      summary: Lista pessoas atendidas
+      description: Exibe a listagem de pessoas cadastradas no sistema.
+      responses:
+        "200":
+          description: Lista de pessoas exibida com sucesso.
+
+  /pessoas/criar.php:
+    post:
+      tags:
+        - Pessoas
+      summary: Cadastra uma nova pessoa atendida
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - nome
+              properties:
+                nome:
+                  type: string
+                  example: João da Silva
+                documento:
+                  type: string
+                  example: "11111111111"
+                email:
+                  type: string
+                  example: joao@email.com
+                telefone:
+                  type: string
+                  example: "47999990000"
+                curso:
+                  type: string
+                  example: Engenharia de Software
+                periodo:
+                  type: string
+                  example: 5º semestre
+      responses:
+        "302":
+          description: Pessoa cadastrada e usuário redirecionado para a listagem.
+
+  /pessoas/editar.php:
+    post:
+      tags:
+        - Pessoas
+      summary: Atualiza uma pessoa atendida
+      parameters:
+        - in: query
+          name: id
+          required: true
+          schema:
+            type: integer
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                nome:
+                  type: string
+                documento:
+                  type: string
+                email:
+                  type: string
+                telefone:
+                  type: string
+                curso:
+                  type: string
+                periodo:
+                  type: string
+                status:
+                  type: string
+                  enum: [ativo, inativo]
+      responses:
+        "302":
+          description: Pessoa atualizada com sucesso.
+
+  /pessoas/excluir.php:
+    get:
+      tags:
+        - Pessoas
+      summary: Inativa uma pessoa atendida
+      description: Atualiza o status da pessoa para inativo.
+      parameters:
+        - in: query
+          name: id
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        "302":
+          description: Pessoa inativada com sucesso.
+
+  /tipos/index.php:
+    get:
+      tags:
+        - Tipos de Atendimento
+      summary: Lista tipos de atendimento
+      responses:
+        "200":
+          description: Lista de tipos de atendimento exibida com sucesso.
+
+  /tipos/criar.php:
+    post:
+      tags:
+        - Tipos de Atendimento
+      summary: Cadastra um tipo de atendimento
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - nome
+              properties:
+                nome:
+                  type: string
+                  example: Monitoria acadêmica
+                descricao:
+                  type: string
+                  example: Atendimento para dúvidas de conteúdo.
+      responses:
+        "302":
+          description: Tipo de atendimento cadastrado com sucesso.
+
+  /tipos/editar.php:
+    post:
+      tags:
+        - Tipos de Atendimento
+      summary: Atualiza um tipo de atendimento
+      parameters:
+        - in: query
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                nome:
+                  type: string
+                descricao:
+                  type: string
+                status:
+                  type: string
+                  enum: [ativo, inativo]
+      responses:
+        "302":
+          description: Tipo de atendimento atualizado com sucesso.
+
+  /tipos/excluir.php:
+    get:
+      tags:
+        - Tipos de Atendimento
+      summary: Inativa um tipo de atendimento
+      parameters:
+        - in: query
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "302":
+          description: Tipo de atendimento inativado com sucesso.
+
+  /atendimentos/index.php:
+    get:
+      tags:
+        - Atendimentos
+      summary: Lista atendimentos com filtros
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [aberto, em_andamento, concluido]
+        - in: query
+          name: pessoa_id
+          schema:
+            type: integer
+        - in: query
+          name: tipo_atendimento_id
+          schema:
+            type: integer
+        - in: query
+          name: data_inicio
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: data_fim
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Lista de atendimentos exibida com sucesso.
+
+  /atendimentos/criar.php:
+    post:
+      tags:
+        - Atendimentos
+      summary: Registra um novo atendimento
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - pessoa_id
+                - tipo_atendimento_id
+                - data_atendimento
+                - hora_atendimento
+                - descricao
+              properties:
+                pessoa_id:
+                  type: integer
+                  example: 1
+                tipo_atendimento_id:
+                  type: integer
+                  example: 1
+                data_atendimento:
+                  type: string
+                  format: date
+                  example: "2026-06-09"
+                hora_atendimento:
+                  type: string
+                  example: "14:30"
+                status:
+                  type: string
+                  enum: [aberto, em_andamento, concluido]
+                  example: aberto
+                descricao:
+                  type: string
+                  example: Atendimento para esclarecimento de dúvidas.
+      responses:
+        "302":
+          description: Atendimento cadastrado com sucesso.
+
+  /atendimentos/visualizar.php:
+    get:
+      tags:
+        - Atendimentos
+      summary: Visualiza detalhes de um atendimento
+      parameters:
+        - in: query
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Detalhes do atendimento exibidos com sucesso.
+
+  /atendimentos/editar.php:
+    post:
+      tags:
+        - Atendimentos
+      summary: Atualiza um atendimento
+      parameters:
+        - in: query
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                pessoa_id:
+                  type: integer
+                tipo_atendimento_id:
+                  type: integer
+                data_atendimento:
+                  type: string
+                  format: date
+                hora_atendimento:
+                  type: string
+                status:
+                  type: string
+                  enum: [aberto, em_andamento, concluido]
+                descricao:
+                  type: string
+                observacao:
+                  type: string
+      responses:
+        "302":
+          description: Atendimento atualizado com sucesso.
+
+  /atendimentos/excluir.php:
+    get:
+      tags:
+        - Atendimentos
+      summary: Exclui um atendimento
+      parameters:
+        - in: query
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "302":
+          description: Atendimento excluído com sucesso.
+
+  /relatorios/atendimentos.php:
+    get:
+      tags:
+        - Relatórios
+      summary: Gera relatório de atendimentos
+      parameters:
+        - in: query
+          name: data_inicio
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: data_fim
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Relatório de atendimentos exibido em HTML.
